@@ -105,18 +105,31 @@ object BooleanDslV1 {
   // TODO Jules
   def optimise(exp: BooleanDslV1): BooleanDslV1 =
     exp match {
-      case x: Pure => x
+      case x: Pure          => x
+      case x @ Not(Pure(_)) => x
 
-      case x @ And(Pure(_), Pure(_))  => x
-      case x @ Nand(Pure(_), Pure(_)) => x
-      case x @ Or(Pure(_), Pure(_))   => x
-      case x @ Nor(Pure(_), Pure(_))  => x
-      case x @ Not(Pure(_))           => x
+      case x @ And(Pure(_), Pure(_))           => x
+      case x @ And(Not(Pure(_)), Pure(_))      => x
+      case x @ And(Pure(_), Not(Pure(_)))      => x
+      case x @ And(Not(Pure(_)), Not(Pure(_))) => x
+
+      case x @ Nand(Pure(_), Pure(_))      => x
+      case x @ Nand(Not(Pure(_)), Pure(_)) => x
+      case x @ Nand(Pure(_), Not(Pure(_))) => x
 
       case Nand(Not(x: Pure), Not(y: Pure)) => Or(x, y)
       case Nand(Not(x: Pure), Not(y))       => Or(x, optimise(y))
       case Nand(Not(x), Not(y: Pure))       => Or(optimise(x), y)
       case Nand(Not(x), Not(y))             => Or(optimise(x), optimise(y))
+
+      case x @ Or(Pure(_), Pure(_))           => x
+      case x @ Or(Not(Pure(_)), Pure(_))      => x
+      case x @ Or(Pure(_), Not(Pure(_)))      => x
+      case x @ Or(Not(Pure(_)), Not(Pure(_))) => x
+
+      case x @ Nor(Pure(_), Pure(_))      => x
+      case x @ Nor(Not(Pure(_)), Pure(_)) => x
+      case x @ Nor(Pure(_), Not(Pure(_))) => x
 
       case Nor(Not(x: Pure), Not(y: Pure)) => And(x, y)
       case Nor(Not(x: Pure), Not(y))       => And(x, optimise(y))
