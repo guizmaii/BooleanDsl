@@ -1,17 +1,37 @@
 package com.guizmaii.experiment.boolean.dsl
 
-sealed trait BooleanDslV1
-object BooleanDslV1 {
+import com.guizmaii.experiment.boolean.dsl.BooleanDslV1.{And, Or}
+
+sealed trait BooleanDslV1 {
+  def unary_! : BooleanDslV1
+
+  final def &&(that: BooleanDslV1): BooleanDslV1 = And(this, that)
+  final def ||(that: BooleanDslV1): BooleanDslV1 = Or(this, that)
+  final def not: BooleanDslV1 = ! this
+}
+object BooleanDslV1       {
 
   sealed trait Unary                      extends BooleanDslV1
-  final case class Pure(v: () => Boolean) extends Unary
-  final case class Not(x: () => Boolean)  extends Unary
+  final case class Pure(x: () => Boolean) extends Unary {
+    override def unary_! : BooleanDslV1 = Not(x)
+  }
+  final case class Not(x: () => Boolean)  extends Unary {
+    override def unary_! : BooleanDslV1 = Pure(x)
+  }
 
   sealed trait Binary                                     extends BooleanDslV1
-  final case class And(x: BooleanDslV1, y: BooleanDslV1)  extends Binary
-  final case class Nand(x: BooleanDslV1, y: BooleanDslV1) extends Binary
-  final case class Or(x: BooleanDslV1, y: BooleanDslV1)   extends Binary
-  final case class Nor(x: BooleanDslV1, y: BooleanDslV1)  extends Binary
+  final case class And(x: BooleanDslV1, y: BooleanDslV1)  extends Binary {
+    override def unary_! : BooleanDslV1 = Nand(x, y)
+  }
+  final case class Nand(x: BooleanDslV1, y: BooleanDslV1) extends Binary {
+    override def unary_! : BooleanDslV1 = And(x, y)
+  }
+  final case class Or(x: BooleanDslV1, y: BooleanDslV1)   extends Binary {
+    override def unary_! : BooleanDslV1 = Nor(x, y)
+  }
+  final case class Nor(x: BooleanDslV1, y: BooleanDslV1)  extends Binary {
+    override def unary_! : BooleanDslV1 = Or(x, y)
+  }
 
   def interpret(exp: BooleanDslV1): Boolean =
     exp match {
@@ -104,20 +124,4 @@ object BooleanDslV1 {
       case Nor(x, y)  => Nor(optimise(x), optimise(y))
     }
 
-  implicit final class BDslOps(private val exp0: BooleanDslV1) extends AnyVal {
-    def &&(exp1: BooleanDslV1): BooleanDslV1 = And(exp0, exp1)
-    def ||(exp1: BooleanDslV1): BooleanDslV1 = Or(exp0, exp1)
-
-    def not: BooleanDslV1 =
-      exp0 match {
-        case Pure(x)    => Not(x)
-        case Not(x)     => Pure(x)
-        case And(x, y)  => Nand(x, y)
-        case Nand(x, y) => And(x, y)
-        case Or(x, y)   => Nor(x, y)
-        case Nor(x, y)  => Or(x, y)
-      }
-
-    def unary_! : BooleanDslV1 = not
-  }
 }
