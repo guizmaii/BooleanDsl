@@ -3,97 +3,80 @@ package com.guizmaii.experiment.boolean.dsl
 sealed trait BooleanDslV1
 object BooleanDslV1 {
 
-  final case class Pure(v: () => Boolean)                 extends BooleanDslV1
-  final case class Not(x: BooleanDslV1)                   extends BooleanDslV1
-  final case class And(x: BooleanDslV1, y: BooleanDslV1)  extends BooleanDslV1
-  final case class Nand(x: BooleanDslV1, y: BooleanDslV1) extends BooleanDslV1
-  final case class Or(x: BooleanDslV1, y: BooleanDslV1)   extends BooleanDslV1
-  final case class Nor(x: BooleanDslV1, y: BooleanDslV1)  extends BooleanDslV1
+  sealed trait Unary                      extends BooleanDslV1
+  final case class Pure(v: () => Boolean) extends Unary
+  final case class Not(x: () => Boolean)  extends Unary
+
+  sealed trait Binary                                     extends BooleanDslV1
+  final case class And(x: BooleanDslV1, y: BooleanDslV1)  extends Binary
+  final case class Nand(x: BooleanDslV1, y: BooleanDslV1) extends Binary
+  final case class Or(x: BooleanDslV1, y: BooleanDslV1)   extends Binary
+  final case class Nor(x: BooleanDslV1, y: BooleanDslV1)  extends Binary
 
   def interpret(exp: BooleanDslV1): Boolean =
     exp match {
-      case Pure(x)      => x()
-      case Not(Pure(x)) => !x()
+      case Pure(x) => x()
+      case Not(x)  => !x()
 
-      case And(Pure(x), Pure(y))           => x() && y()
-      case And(Pure(x), Not(Pure(y)))      => x() && !y()
-      case And(Not(Pure(x)), Pure(y))      => !x() && y()
-      case And(Not(Pure(x)), Not(Pure(y))) => !x() && !y()
-      case And(Pure(x), Not(y))            => x() && !interpret(y)
-      case And(Not(Pure(x)), Not(y))       => !x() && !interpret(y)
-      case And(Not(x), Pure(y))            => !interpret(x) && y()
-      case And(Not(x), Not(Pure(y)))       => !interpret(x) && !y()
-      case And(Not(x), Not(y))             => !interpret(x) && !interpret(y)
+      case And(Pure(x), Pure(y)) => x() && y()
+      case And(Pure(x), Not(y))  => x() && !y()
+      case And(Not(x), Pure(y))  => !x() && y()
+      case And(Not(x), Not(y))   => !x() && !y()
 
       case And(Pure(x), And(y, z))  => x() && interpret(y) && interpret(z)
       case And(Pure(x), Nand(y, z)) => x() && !(interpret(y) && interpret(z))
       case And(Pure(x), Or(y, z))   => x() && (interpret(y) || interpret(z))
       case And(Pure(x), Nor(y, z))  => x() && !(interpret(y) || interpret(z))
 
-      case And(Not(Pure(x)), And(y, z))  => !x() && (interpret(y) && interpret(z))
-      case And(Not(Pure(x)), Nand(y, z)) => !x() && !(interpret(y) && interpret(z))
-      case And(Not(Pure(x)), Or(y, z))   => !x() && (interpret(y) || interpret(z))
-      case And(Not(Pure(x)), Nor(y, z))  => !x() && !(interpret(y) || interpret(z))
+      case And(Not(x), And(y, z))  => !x() && (interpret(y) && interpret(z))
+      case And(Not(x), Nand(y, z)) => !x() && !(interpret(y) && interpret(z))
+      case And(Not(x), Or(y, z))   => !x() && (interpret(y) || interpret(z))
+      case And(Not(x), Nor(y, z))  => !x() && !(interpret(y) || interpret(z))
 
-      case Nand(Pure(x), Pure(y))           => !(x() && y())
-      case Nand(Pure(x), Not(Pure(y)))      => !(x() && !y())
-      case Nand(Not(Pure(x)), Pure(y))      => !(!x() && y())
-      case Nand(Not(Pure(x)), Not(Pure(y))) => x() || y()
-      case Nand(Pure(x), Not(y))            => !(x() && !interpret(y))
-      case Nand(Not(Pure(x)), Not(y))       => x() || interpret(y)
-      case Nand(Not(x), Pure(y))            => !(!interpret(x) && y())
-      case Nand(Not(x), Not(Pure(y)))       => interpret(x) || y()
-      case Nand(Not(x), Not(y))             => interpret(x) || interpret(y)
+      case Nand(Pure(x), Pure(y)) => !(x() && y())
+      case Nand(Pure(x), Not(y))  => !(x() && !y())
+      case Nand(Not(x), Pure(y))  => !(!x() && y())
+      case Nand(Not(x), Not(y))   => x() || y()
 
       case Nand(Pure(x), And(y, z))  => !(x() && (interpret(y) && interpret(z)))
       case Nand(Pure(x), Nand(y, z)) => !(x() && !(interpret(y) && interpret(z)))
       case Nand(Pure(x), Or(y, z))   => !(x() && (interpret(y) || interpret(z)))
       case Nand(Pure(x), Nor(y, z))  => !(x() && !(interpret(y) || interpret(z)))
 
-      case Nand(Not(Pure(x)), And(y, z))  => !(!x() && (interpret(y) && interpret(z)))
-      case Nand(Not(Pure(x)), Nand(y, z)) => x() || (interpret(y) && interpret(z))
-      case Nand(Not(Pure(x)), Or(y, z))   => !(!x() && (interpret(y) || interpret(z)))
-      case Nand(Not(Pure(x)), Nor(y, z))  => x() || interpret(y) || interpret(z)
+      case Nand(Not(x), And(y, z))  => !(!x() && (interpret(y) && interpret(z)))
+      case Nand(Not(x), Nand(y, z)) => x() || (interpret(y) && interpret(z))
+      case Nand(Not(x), Or(y, z))   => !(!x() && (interpret(y) || interpret(z)))
+      case Nand(Not(x), Nor(y, z))  => x() || interpret(y) || interpret(z)
 
-      case Or(Pure(x), Pure(y))           => x() || y()
-      case Or(Pure(x), Not(Pure(y)))      => x() || !y()
-      case Or(Not(Pure(x)), Pure(y))      => !x() || y()
-      case Or(Not(Pure(x)), Not(Pure(y))) => !x() || !y()
-      case Or(Pure(x), Not(y))            => x() || !interpret(y)
-      case Or(Not(Pure(x)), Not(y))       => !x() || !interpret(y)
-      case Or(Not(x), Pure(y))            => !interpret(x) || y()
-      case Or(Not(x), Not(Pure(y)))       => !interpret(x) || !y()
-      case Or(Not(x), Not(y))             => !interpret(x) || !interpret(y)
+      case Or(Pure(x), Pure(y)) => x() || y()
+      case Or(Pure(x), Not(y))  => x() || !y()
+      case Or(Not(x), Pure(y))  => !x() || y()
+      case Or(Not(x), Not(y))   => !x() || !y()
 
       case Or(Pure(x), And(y, z))  => x() || (interpret(y) && interpret(z))
       case Or(Pure(x), Nand(y, z)) => x() || !(interpret(y) && interpret(z))
       case Or(Pure(x), Or(y, z))   => x() || (interpret(y) || interpret(z))
       case Or(Pure(x), Nor(y, z))  => x() || !(interpret(y) || interpret(z))
 
-      case Or(Not(Pure(x)), And(y, z))  => !x() || (interpret(y) && interpret(z))
-      case Or(Not(Pure(x)), Nand(y, z)) => !x() || !(interpret(y) && interpret(z))
-      case Or(Not(Pure(x)), Or(y, z))   => !x() || (interpret(y) || interpret(z))
-      case Or(Not(Pure(x)), Nor(y, z))  => !x() || !(interpret(y) || interpret(z))
+      case Or(Not(x), And(y, z))  => !x() || (interpret(y) && interpret(z))
+      case Or(Not(x), Nand(y, z)) => !x() || !(interpret(y) && interpret(z))
+      case Or(Not(x), Or(y, z))   => !x() || (interpret(y) || interpret(z))
+      case Or(Not(x), Nor(y, z))  => !x() || !(interpret(y) || interpret(z))
 
-      case Nor(Pure(x), Pure(y))           => !(x() || y())
-      case Nor(Pure(x), Not(Pure(y)))      => !(x() || !y())
-      case Nor(Not(Pure(x)), Pure(y))      => !(!x() || y())
-      case Nor(Not(Pure(x)), Not(Pure(y))) => x() && y()
-      case Nor(Pure(x), Not(y))            => !(x() || !interpret(y))
-      case Nor(Not(Pure(x)), Not(y))       => x() && interpret(y)
-      case Nor(Not(x), Pure(y))            => !(!interpret(x) || y())
-      case Nor(Not(x), Not(Pure(y)))       => interpret(x) && y()
-      case Nor(Not(x), Not(y))             => interpret(x) && interpret(y)
+      case Nor(Pure(x), Pure(y)) => !(x() || y())
+      case Nor(Pure(x), Not(y))  => !(x() || !y())
+      case Nor(Not(x), Pure(y))  => !(!x() || y())
+      case Nor(Not(x), Not(y))   => x() && y()
 
       case Nor(Pure(x), And(y, z))  => !(x() || (interpret(y) && interpret(z)))
       case Nor(Pure(x), Nand(y, z)) => !(x() || !(interpret(y) && interpret(z)))
       case Nor(Pure(x), Or(y, z))   => !(x() || (interpret(y) || interpret(z)))
       case Nor(Pure(x), Nor(y, z))  => !(x() || !(interpret(y) || interpret(z)))
 
-      case Nor(Not(Pure(x)), And(y, z))  => !(!x() || (interpret(y) && interpret(z)))
-      case Nor(Not(Pure(x)), Nand(y, z)) => x() && interpret(y) && interpret(z)
-      case Nor(Not(Pure(x)), Or(y, z))   => !(!x() || (interpret(y) || interpret(z)))
-      case Nor(Not(Pure(x)), Nor(y, z))  => x() && (interpret(y) || interpret(z))
+      case Nor(Not(x), And(y, z))  => !(!x() || (interpret(y) && interpret(z)))
+      case Nor(Not(x), Nand(y, z)) => x() && interpret(y) && interpret(z)
+      case Nor(Not(x), Or(y, z))   => !(!x() || (interpret(y) || interpret(z)))
+      case Nor(Not(x), Nor(y, z))  => x() && (interpret(y) || interpret(z))
 
       case And(x, y)  => interpret(x) && interpret(y)
       case Nand(x, y) => !(interpret(x) && interpret(y))
@@ -104,36 +87,16 @@ object BooleanDslV1 {
   // TODO Jules
   def optimise(exp: BooleanDslV1): BooleanDslV1 =
     exp match {
-      case x: Pure          => x
-      case x @ Not(Pure(_)) => x
+      case x: Unary => x
 
-      case x @ And(Pure(_), Pure(_))           => x
-      case x @ And(Not(Pure(_)), Pure(_))      => x
-      case x @ And(Pure(_), Not(Pure(_)))      => x
-      case x @ And(Not(Pure(_)), Not(Pure(_))) => x
+      case x @ And(_: Unary, _: Unary) => x
+      case x @ Or(_: Unary, _: Unary)  => x
 
-      case x @ Nand(Pure(_), Pure(_))      => x
-      case x @ Nand(Not(Pure(_)), Pure(_)) => x
-      case x @ Nand(Pure(_), Not(Pure(_))) => x
+      case Nand(x: Not, y: Not)         => Or(x, y)
+      case x @ Nand(_: Unary, _: Unary) => x
 
-      case Nand(Not(x: Pure), Not(y: Pure)) => Or(x, y)
-      case Nand(Not(x: Pure), Not(y))       => Or(x, optimise(y))
-      case Nand(Not(x), Not(y: Pure))       => Or(optimise(x), y)
-      case Nand(Not(x), Not(y))             => Or(optimise(x), optimise(y))
-
-      case x @ Or(Pure(_), Pure(_))           => x
-      case x @ Or(Not(Pure(_)), Pure(_))      => x
-      case x @ Or(Pure(_), Not(Pure(_)))      => x
-      case x @ Or(Not(Pure(_)), Not(Pure(_))) => x
-
-      case x @ Nor(Pure(_), Pure(_))      => x
-      case x @ Nor(Not(Pure(_)), Pure(_)) => x
-      case x @ Nor(Pure(_), Not(Pure(_))) => x
-
-      case Nor(Not(x: Pure), Not(y: Pure)) => And(x, y)
-      case Nor(Not(x: Pure), Not(y))       => And(x, optimise(y))
-      case Nor(Not(x), Not(y: Pure))       => And(optimise(x), y)
-      case Nor(Not(x), Not(y))             => And(optimise(x), optimise(y))
+      case Nor(x: Not, y: Not)         => And(x, y)
+      case x @ Nor(_: Unary, _: Unary) => x
 
       case And(x, y)  => And(optimise(x), optimise(y))
       case Nand(x, y) => Nand(optimise(x), optimise(y))
@@ -147,8 +110,8 @@ object BooleanDslV1 {
 
     def not: BooleanDslV1 =
       exp0 match {
-        case x: Pure    => Not(x)
-        case Not(x)     => x
+        case Pure(x)    => Not(x)
+        case Not(x)     => Pure(x)
         case And(x, y)  => Nand(x, y)
         case Nand(x, y) => And(x, y)
         case Or(x, y)   => Nor(x, y)
