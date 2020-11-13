@@ -51,9 +51,9 @@ object BooleanDslV1 {
       case Nand(Pure(x), Nor(y, z))  => !(x() && !(interpret(y) || interpret(z)))
 
       case Nand(Not(Pure(x)), And(y, z))  => !(!x() && (interpret(y) && interpret(z)))
-      case Nand(Not(Pure(x)), Nand(y, z)) => !(!x() && !(interpret(y) && interpret(z)))
+      case Nand(Not(Pure(x)), Nand(y, z)) => x() || (interpret(y) && interpret(z))
       case Nand(Not(Pure(x)), Or(y, z))   => !(!x() && (interpret(y) || interpret(z)))
-      case Nand(Not(Pure(x)), Nor(y, z))  => !(!x() && !(interpret(y) || interpret(z)))
+      case Nand(Not(Pure(x)), Nor(y, z))  => x() || interpret(y) || interpret(z)
 
       case Or(Pure(x), Pure(y))           => x() || y()
       case Or(Pure(x), Not(Pure(y)))      => x() || !y()
@@ -91,9 +91,9 @@ object BooleanDslV1 {
       case Nor(Pure(x), Nor(y, z))  => !(x() || !(interpret(y) || interpret(z)))
 
       case Nor(Not(Pure(x)), And(y, z))  => !(!x() || (interpret(y) && interpret(z)))
-      case Nor(Not(Pure(x)), Nand(y, z)) => !(!x() || !(interpret(y) && interpret(z)))
+      case Nor(Not(Pure(x)), Nand(y, z)) => x() && interpret(y) && interpret(z)
       case Nor(Not(Pure(x)), Or(y, z))   => !(!x() || (interpret(y) || interpret(z)))
-      case Nor(Not(Pure(x)), Nor(y, z))  => !(!x() || !(interpret(y) || interpret(z)))
+      case Nor(Not(Pure(x)), Nor(y, z))  => x() && (interpret(y) || interpret(z))
 
       case And(x, y)  => interpret(x) && interpret(y)
       case Nand(x, y) => !(interpret(x) && interpret(y))
