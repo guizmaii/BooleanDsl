@@ -1,13 +1,11 @@
-package com.guizmaii.experiment.boolean.dsl
-
-import com.guizmaii.experiment.boolean.dsl.BooleanDslV1.{And, Or}
+package com.guizmaii.boolean.dsl
 
 sealed trait BooleanDslV1 {
   def unary_! : BooleanDslV1
 
-  final def &&(that: BooleanDslV1): BooleanDslV1 = And(this, that)
-  final def ||(that: BooleanDslV1): BooleanDslV1 = Or(this, that)
-  final def not: BooleanDslV1 = ! this
+  final def &&(that: BooleanDslV1): BooleanDslV1 = BooleanDslV1.And(this, that)
+  final def ||(that: BooleanDslV1): BooleanDslV1 = BooleanDslV1.Or(this, that)
+  final def not: BooleanDslV1                    = !this
 }
 object BooleanDslV1       {
 
