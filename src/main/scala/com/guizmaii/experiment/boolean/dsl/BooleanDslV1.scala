@@ -12,7 +12,7 @@ object BooleanDslV1 {
 
   def interpret(exp: BooleanDslV1): Boolean =
     exp match {
-      case Pure(v)      => v()
+      case Pure(x)      => x()
       case Not(Pure(x)) => !x()
 
       case And(Pure(x), Pure(y))           => x() && y()
