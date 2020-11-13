@@ -102,24 +102,4 @@ object BooleanDslV1       {
       case Nor(x, y)  => !(interpret(x) || interpret(y))
     }
 
-  // TODO Jules
-  def optimise(exp: BooleanDslV1): BooleanDslV1 =
-    exp match {
-      case x: Unary => x
-
-      case x @ And(_: Unary, _: Unary) => x
-      case x @ Or(_: Unary, _: Unary)  => x
-
-      case Nand(x: Not, y: Not)         => Or(x, y)
-      case x @ Nand(_: Unary, _: Unary) => x
-
-      case Nor(x: Not, y: Not)         => And(x, y)
-      case x @ Nor(_: Unary, _: Unary) => x
-
-      case And(x, y)  => And(optimise(x), optimise(y))
-      case Nand(x, y) => Nand(optimise(x), optimise(y))
-      case Or(x, y)   => Or(optimise(x), optimise(y))
-      case Nor(x, y)  => Nor(optimise(x), optimise(y))
-    }
-
 }
