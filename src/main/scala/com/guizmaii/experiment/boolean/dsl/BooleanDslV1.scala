@@ -140,7 +140,6 @@ object BooleanDslV1 {
       case Nand(x, y) => Nand(optimise(x), optimise(y))
       case Or(x, y)   => Or(optimise(x), optimise(y))
       case Nor(x, y)  => Nor(optimise(x), optimise(y))
-      case Not(x)     => Not(optimise(x))
     }
 
   implicit final class BDslOps(private val exp0: BooleanDslV1) extends AnyVal {
