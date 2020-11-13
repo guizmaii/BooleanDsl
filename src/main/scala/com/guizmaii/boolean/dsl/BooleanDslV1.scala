@@ -9,27 +9,29 @@ sealed trait BooleanDslV1 {
 }
 object BooleanDslV1       {
 
-  sealed trait Unary                      extends BooleanDslV1
-  final case class Pure(x: () => Boolean) extends Unary {
+  sealed trait Unary                                   extends BooleanDslV1
+  private[dsl] final case class Pure(x: () => Boolean) extends Unary {
     override def unary_! : BooleanDslV1 = Not(x)
   }
-  final case class Not(x: () => Boolean)  extends Unary {
+  private[dsl] final case class Not(x: () => Boolean)  extends Unary {
     override def unary_! : BooleanDslV1 = Pure(x)
   }
 
-  sealed trait Binary                                     extends BooleanDslV1
-  final case class And(x: BooleanDslV1, y: BooleanDslV1)  extends Binary {
+  sealed trait Binary                                                  extends BooleanDslV1
+  private[dsl] final case class And(x: BooleanDslV1, y: BooleanDslV1)  extends Binary {
     override def unary_! : BooleanDslV1 = Nand(x, y)
   }
-  final case class Nand(x: BooleanDslV1, y: BooleanDslV1) extends Binary {
+  private[dsl] final case class Nand(x: BooleanDslV1, y: BooleanDslV1) extends Binary {
     override def unary_! : BooleanDslV1 = And(x, y)
   }
-  final case class Or(x: BooleanDslV1, y: BooleanDslV1)   extends Binary {
+  private[dsl] final case class Or(x: BooleanDslV1, y: BooleanDslV1)   extends Binary {
     override def unary_! : BooleanDslV1 = Nor(x, y)
   }
-  final case class Nor(x: BooleanDslV1, y: BooleanDslV1)  extends Binary {
+  private[dsl] final case class Nor(x: BooleanDslV1, y: BooleanDslV1)  extends Binary {
     override def unary_! : BooleanDslV1 = Or(x, y)
   }
+
+  def pure(x: => Boolean): BooleanDslV1 = Pure(() => x)
 
   def interpret(exp: BooleanDslV1): Boolean =
     exp match {
