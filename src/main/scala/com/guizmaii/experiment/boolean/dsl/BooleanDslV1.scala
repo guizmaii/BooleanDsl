@@ -4,11 +4,11 @@ sealed trait BooleanDslV1
 object BooleanDslV1 {
 
   final case class Pure(v: () => Boolean)                 extends BooleanDslV1
+  final case class Not(x: BooleanDslV1)                   extends BooleanDslV1
   final case class And(x: BooleanDslV1, y: BooleanDslV1)  extends BooleanDslV1
   final case class Nand(x: BooleanDslV1, y: BooleanDslV1) extends BooleanDslV1
   final case class Or(x: BooleanDslV1, y: BooleanDslV1)   extends BooleanDslV1
   final case class Nor(x: BooleanDslV1, y: BooleanDslV1)  extends BooleanDslV1
-  final case class Not(x: BooleanDslV1)                   extends BooleanDslV1
 
   def interpret(exp: BooleanDslV1): Boolean =
     exp match {
@@ -148,11 +148,11 @@ object BooleanDslV1 {
     def not: BooleanDslV1 =
       exp0 match {
         case x: Pure    => Not(x)
+        case Not(x)     => x
         case And(x, y)  => Nand(x, y)
         case Nand(x, y) => And(x, y)
         case Or(x, y)   => Nor(x, y)
         case Nor(x, y)  => Or(x, y)
-        case Not(x)     => x
       }
 
     def unary_! : BooleanDslV1 = not
