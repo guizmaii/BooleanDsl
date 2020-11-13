@@ -113,10 +113,10 @@ object BooleanDslV1 {
       case x @ Nor(Pure(_), Pure(_))  => x
       case x @ Not(Pure(_))           => x
 
-      case And(Not(x: Pure), Not(y: Pure)) => Or(x, y)
-      case And(Not(x: Pure), Not(y))       => Or(x, optimise(y))
-      case And(Not(x), Not(y: Pure))       => Or(optimise(x), y)
-      case And(Not(x), Not(y))             => Or(optimise(x), optimise(y))
+      case Nand(Not(x: Pure), Not(y: Pure)) => Or(x, y)
+      case Nand(Not(x: Pure), Not(y))       => Or(x, optimise(y))
+      case Nand(Not(x), Not(y: Pure))       => Or(optimise(x), y)
+      case Nand(Not(x), Not(y))             => Or(optimise(x), optimise(y))
 
       case Nor(Not(x: Pure), Not(y: Pure)) => And(x, y)
       case Nor(Not(x: Pure), Not(y))       => And(x, optimise(y))
