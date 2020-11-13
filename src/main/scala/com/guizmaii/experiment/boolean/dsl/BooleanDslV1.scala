@@ -99,7 +99,6 @@ object BooleanDslV1 {
       case Nand(x, y) => !(interpret(x) && interpret(y))
       case Or(x, y)   => interpret(x) || interpret(y)
       case Nor(x, y)  => !(interpret(x) || interpret(y))
-      case Not(x)     => !interpret(x)
     }
 
   // TODO Jules
