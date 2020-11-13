@@ -1,16 +1,16 @@
 package com.guizmaii.experiment.boolean.dsl
 
-sealed trait BooleanDsl
-object BooleanDsl {
+sealed trait BooleanDslV1
+object BooleanDslV1 {
 
-  final case class Pure(v: () => Boolean)             extends BooleanDsl
-  final case class And(x: BooleanDsl, y: BooleanDsl)  extends BooleanDsl
-  final case class Nand(x: BooleanDsl, y: BooleanDsl) extends BooleanDsl
-  final case class Or(x: BooleanDsl, y: BooleanDsl)   extends BooleanDsl
-  final case class Nor(x: BooleanDsl, y: BooleanDsl)  extends BooleanDsl
-  final case class Not(x: BooleanDsl)                 extends BooleanDsl
+  final case class Pure(v: () => Boolean)                 extends BooleanDslV1
+  final case class And(x: BooleanDslV1, y: BooleanDslV1)  extends BooleanDslV1
+  final case class Nand(x: BooleanDslV1, y: BooleanDslV1) extends BooleanDslV1
+  final case class Or(x: BooleanDslV1, y: BooleanDslV1)   extends BooleanDslV1
+  final case class Nor(x: BooleanDslV1, y: BooleanDslV1)  extends BooleanDslV1
+  final case class Not(x: BooleanDslV1)                   extends BooleanDslV1
 
-  def interpret(exp: BooleanDsl): Boolean =
+  def interpret(exp: BooleanDslV1): Boolean =
     exp match {
       case Pure(v) => v()
 
@@ -83,11 +83,11 @@ object BooleanDsl {
       case Not(x)     => !interpret(x)
     }
 
-  implicit final class BDslOps(private val exp0: BooleanDsl) extends AnyVal {
-    def &&(exp1: BooleanDsl): BooleanDsl = And(exp0, exp1)
-    def ||(exp1: BooleanDsl): BooleanDsl = Or(exp0, exp1)
+  implicit final class BDslOps(private val exp0: BooleanDslV1) extends AnyVal {
+    def &&(exp1: BooleanDslV1): BooleanDslV1 = And(exp0, exp1)
+    def ||(exp1: BooleanDslV1): BooleanDslV1 = Or(exp0, exp1)
 
-    def not: BooleanDsl =
+    def not: BooleanDslV1 =
       exp0 match {
         case x: Pure    => Not(x)
         case And(x, y)  => Nand(x, y)
@@ -97,6 +97,6 @@ object BooleanDsl {
         case Not(x)     => x
       }
 
-    def unary_! : BooleanDsl = not
+    def unary_! : BooleanDslV1 = not
   }
 }
